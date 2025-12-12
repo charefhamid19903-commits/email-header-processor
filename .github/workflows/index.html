@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Header Processor</title>
+    <style>
+        :root {
+            --primary: #2d3748;
+            --secondary: #4a5568;
+            --accent: #4299e1;
+            --light: #f7fafc;
+            --dark: #1a202c;
+            --success: #48bb78;
+            --danger: #f56565;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature {
+            background: var(--light);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: var(--primary);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .panel h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+            font-size: 1.5em;
+        }
+        
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .output-area {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        textarea {
+            width: 100%;
+            flex-grow: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s;
+            background: #f8f9fa;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        textarea#output {
+            background: #f0fff4;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #2d3748;
+            transform: translateY(-2px);
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: #edf2f7;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        
+        .stats div {
+            margin: 5px 0;
+        }
+        
+        .example-toggle {
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9em;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .example-toggle:hover {
+            color: #3182ce;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .alert {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .alert-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border: 1px solid #90cdf4;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--secondary);
+            font-size: 0.9em;
+        }
+        
+        .icon {
+            font-size: 1.2em;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-envelope icon"></i> Email Header Processor</h1>
+            <p class="subtitle">Quickly process email headers for support tickets</p>
+            <div class="features">
+                <span class="feature"><i class="fas fa-filter"></i> Removes sensitive headers</span>
+                <span class="feature"><i class="fas fa-exchange-alt"></i> Converts .fin to .[RDNS]</span>
+                <span class="feature"><i class="fas fa-tag"></i> Adds [EID] to Message-ID</span>
+                <span class="feature"><i class="fas fa-shield-alt"></i> Client-side processing</span>
+            </div>
+        </header>
+        
+        <div id="alert-container"></div>
+        
+        <div class="content">
+            <!-- Input Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-paper-plane"></i> Input Header</h2>
+                <div class="input-area">
+                    <textarea id="input" placeholder="Paste your email header here...
+
+Example:
+From: sender@company.fin
+To: support@example.com
+Received: from mail.company.fin
+Message-ID: <2023123456789.12345@company.fin>
+Subject: Help Request"></textarea>
+                    
+                    <div class="stats">
+                        <div><strong>Headers to remove:</strong> Received, Return-Path, DKIM-Signature, ARC headers, Authentication-Results</div>
+                        <div><strong>Lines:</strong> <span id="input-lines">0</span> | <strong>Characters:</strong> <span id="input-chars">0</span></div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="processHeader()">
+                            <i class="fas fa-cogs"></i> Process Header
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearInput()">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadExample()">
+                            <i class="fas fa-eye"></i> Load Example
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Output Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-file-alt"></i> Processed Header</h2>
+                <div class="output-area">
+                    <textarea id="output" readonly placeholder="Processed header will appear here..."></textarea>
+                    
+                    <div class="stats">
+                        <div><strong>Changes made:</strong> <span id="changes-count">0</span></div>
+                        <div><strong>Lines:</strong> <span id="output-lines">0</span> | <strong>Characters:</strong> <span id="output-chars">0</span></div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="btn btn-success" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Copy to Clipboard
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadOutput()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearOutput()">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Example Email Header (Hidden) -->
+        <div class="hidden" id="example-header">
+From: john.doe@company.fin
+To: support@helpdesk.com
+Date: Mon, 15 Jan 2024 10:30:45 +0000
+Subject: Urgent: Server Issue
+Message-ID: <20241215103045.123456@company.fin>
+Received: from mail.company.fin (mail.company.fin [192.168.1.1])
+    by mx.google.com with ESMTPS id abc123def456
+    for <support@helpdesk.com>;
+    Mon, 15 Jan 2024 10:30:45 +0000 (UTC)
+Return-Path: <bounce@company.fin>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+    d=company.fin; s=google;
+    h=mime-version:from:date:message-id:subject:to;
+    bh=abcdef123456=;
+    b=xyz789
+ARC-Seal: i=1; a=rsa-sha256; t=1705314645; cv=none;
+    d=google.com; s=arc-20160816;
+ARC-Authentication-Results: i=1; mx.google.com;
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+X-GM-Message-State: AOAM532nXyz
+X-Received: by 2002:a05:xyz with SMTP id abc;
+Authentication-Results: mx.google.com;
+    dkim=pass header.i=@company.fin header.s=google header.b=xyz789;
+    spf=pass (google.com: domain of company.fin designates 192.168.1.1 as permitted sender)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+Hello Support Team,
+
+Our production server is experiencing issues. Please assist.
+
+Regards,
+John Doe
+        </div>
+        
+        <footer>
+            <p><i class="fas fa-code"></i> Processed entirely in your browser - no data is sent to any server</p>
+            <p>Based on the original Python processor. All processing happens locally for maximum privacy.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const config = {
+            headersToRemove: [
+                'received',
+                'return-path',
+                'dkim-signature',
+                'arc-seal',
+                'arc-authentication-results',
+                'arc-message-signature',
+                'authentication-results',
+                'x-google-dkim-signature',
+                'x-gm-message-state',
+                'x-received',
+                'x-mailer',
+                'x-sender'
+            ],
+            domainReplacements: {
+                'fin': '[RDNS]'
+            }
+        };
+
+        // DOM Elements
+        const inputTextarea = document.getElementById('input');
+        const outputTextarea = document.getElementById('output');
+        const inputLinesSpan = document.getElementById('input-lines');
+        const inputCharsSpan = document.getElementById('input-chars');
+        const outputLinesSpan = document.getElementById('output-lines');
+        const outputCharsSpan = document.getElementById('output-chars');
+        const changesCountSpan = document.getElementById('changes-count');
+        const alertContainer = document.getElementById('alert-container');
+
+        // Update input stats
+        inputTextarea.addEventListener('input', updateInputStats);
+        
+        function updateInputStats() {
+            const text = inputTextarea.value;
+            const lines = text.split('\n').length;
+            const chars = text.length;
+            
+            inputLinesSpan.textContent = lines;
+            inputCharsSpan.textContent = chars;
+        }
+
+        // Main processing function
+        function processHeader() {
+            const inputText = inputTextarea.value.trim();
+            
+            if (!inputText) {
+                showAlert('Please enter an email header to process', 'info');
+                return;
+            }
+            
+            const lines = inputText.split('\n');
+            const processedLines = [];
+            let changes = 0;
+            
+            for (let line of lines) {
+                // Skip empty lines
+                if (!line.trim()) {
+                    processedLines.push(line);
+                    continue;
+                }
+                
+                // Check if line should be removed
+                let shouldRemove = false;
+                for (const header of config.headersToRemove) {
+                    if (line.toLowerCase().startsWith(header + ':')) {
+                        shouldRemove = true;
+                        changes++;
+                        break;
+                    }
+                }
+                
+                if (shouldRemove) {
+                    continue;
+                }
+                
+                // Process From field
+                if (line.toLowerCase().startsWith('from:')) {
+                    const processedLine = processFromLine(line);
+                    if (processedLine !== line) {
+                        changes++;
+                        line = processedLine;
+                    }
+                }
+                
+                // Process Message-ID field
+                if (line.toLowerCase().startsWith('message-id:')) {
+                    const processedLine = processMessageId(line);
+                    if (processedLine !== line) {
+                        changes++;
+                        line = processedLine;
+                    }
+                }
+                
+                processedLines.push(line);
+            }
+            
+            const outputText = processedLines.join('\n');
+            outputTextarea.value = outputText;
+            
+            // Update output stats
+            updateOutputStats(outputText, changes);
+            
+            showAlert(`Processed successfully! ${changes} changes made.`, 'success');
+        }
+
+        // Process From: lines
+        function processFromLine(line) {
+            // Regular expression to match @domain.fin patterns
+            // Handles: user@domain.fin, Name <user@domain.fin>, user@domain.fin>
+            const regex = /(@[^\s>]+\.)fin([>\s]|$)/gi;
+            return line.replace(regex, '$1[RDNS]$2');
+        }
+
+        // Process Message-ID: lines
+        function processMessageId(line) {
+            // If it has angle brackets, insert [EID] before closing bracket
+            if (line.includes('<') && line.includes('>')) {
+                return line.replace('>', '[EID]>');
+            } else {
+                // Otherwise append [EID] at the end
+                return line.trim() + '[EID]';
+            }
+        }
+
+        // Update output statistics
+        function updateOutputStats(outputText, changes) {
+            const lines = outputText.split('\n').length;
+            const chars = outputText.length;
+            
+            outputLinesSpan.textContent = lines;
+            outputCharsSpan.textContent = chars;
+            changesCountSpan.textContent = changes;
+        }
+
+        // Copy to clipboard
+        function copyToClipboard() {
+            const outputText = outputTextarea.value;
+            
+            if (!outputText.trim()) {
+                showAlert('Nothing to copy! Process a header first.', 'info');
+                return;
+            }
+            
+            navigator.clipboard.writeText(outputText)
+                .then(() => {
+                    showAlert('Copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showAlert('Failed to copy to clipboard', 'error');
+                });
+        }
+
+        // Download output as text file
+        function downloadOutput() {
+            const outputText = outputTextarea.value;
+            
+            if (!outputText.trim()) {
+                showAlert('Nothing to download! Process a header first.', 'info');
+                return;
+            }
+            
+            const blob = new Blob([outputText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'processed_header.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showAlert('File downloaded!', 'success');
+        }
+
+        // Clear input
+        function clearInput() {
+            inputTextarea.value = '';
+            updateInputStats();
+            showAlert('Input cleared', 'info');
+        }
+
+        // Clear output
+        function clearOutput() {
+            outputTextarea.value = '';
+            updateOutputStats('', 0);
+        }
+
+        // Load example
+        function loadExample() {
+            inputTextarea.value = document.getElementById('example-header').textContent;
+            updateInputStats();
+            showAlert('Example loaded. Click "Process Header" to see it in action!', 'info');
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            // Remove existing alerts
+            while (alertContainer.firstChild) {
+                alertContainer.removeChild(alertContainer.firstChild);
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            
+            alert.innerHTML = `
+                <i class="fas fa-${icon}"></i> ${message}
+            `;
+            
+            alertContainer.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode === alertContainer) {
+                    alertContainer.removeChild(alert);
+                }
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateInputStats();
+            updateOutputStats('', 0);
+            
+            // Add keyboard shortcut (Ctrl+Enter to process)
+            inputTextarea.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    processHeader();
+                }
+            });
+            
+            showAlert('Welcome! Paste your email header and click "Process Header" to begin.', 'info');
+        });
+    </script>
+</body>
+</html>
